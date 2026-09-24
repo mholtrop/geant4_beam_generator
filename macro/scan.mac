@@ -1,0 +1,22 @@
+# Energy and angle ranges example
+/control/verbose 1
+/run/verbose 1
+
+/tgt/det/thickness 20 um
+/tgt/det/zCenter   -1.1 mm
+/run/setCut 10 um
+/run/initialize
+
+/gun/particle e-
+/tgt/gun/Emin 0.2 GeV
+/tgt/gun/Emax 5.0 GeV
+/tgt/gun/thetaXmin -50 mrad
+/tgt/gun/thetaXmax  50 mrad
+/tgt/gun/thetaYmin -10 mrad
+/tgt/gun/thetaYmax  10 mrad
+/tgt/gun/sigmaX 0.1 mm
+/tgt/gun/sigmaY 0.02 mm
+
+/analysis/setFileName target_scan
+/run/printProgress 10000
+/run/beamOn 100000

@@ -1,0 +1,32 @@
+# Monochromatic beam example
+/control/verbose 1
+/run/verbose 1
+
+# --- geometry: BEFORE /run/initialize ---
+/tgt/det/material  G4_W
+/tgt/det/thickness 20 um
+/tgt/det/zCenter   -1.1 mm
+/tgt/det/width     100 mm
+
+# Production cut (range). Secondaries below the corresponding energy
+# threshold are not created as tracks. The Geant4 default is 0.7 mm, which
+# is large compared with the 20 um foil. Thresholds are printed at init.
+/run/setCut 10 um
+
+/run/initialize
+
+# --- beam: AFTER /run/initialize ---
+# Note that thetaY already has the 0.0305 rad rotation applied in addition to the value supplied here.
+/gun/particle e-
+/tgt/gun/energy 3.74 GeV
+/tgt/gun/thetaX 0 mrad
+/tgt/gun/thetaY 0 mrad
+/tgt/gun/sigmaX 0 mm
+/tgt/gun/sigmaY 0 mm
+
+# --- output ---
+/tgt/created/record true
+/analysis/setFileName target_mono
+
+/run/printProgress 10000
+/run/beamOn 100000

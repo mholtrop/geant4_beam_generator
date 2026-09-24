@@ -1,0 +1,5 @@
+/run/setCut 10 um
+/run/initialize
+# let tracks continue after the target so they are visible
+/tgt/exit/kill false
+/control/execute vis.mac
