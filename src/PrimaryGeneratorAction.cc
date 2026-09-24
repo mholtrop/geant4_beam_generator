@@ -49,7 +49,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
    // We generate the beam primaries in the z-axis direction, with the 0.0305 beam rotation
    // already applied.
   const G4double ekin = fEmin + (fEmax - fEmin) * G4UniformRand();
-  const G4double tx = 0.0305 + (fThetaXmin + (fThetaXmax - fThetaXmin) * G4UniformRand());
+  const G4double tx = fThetaXmin + (fThetaXmax - fThetaXmin) * G4UniformRand();
   const G4double ty = fThetaYmin + (fThetaYmax - fThetaYmin) * G4UniformRand();
 
   const G4ThreeVector dir = G4ThreeVector(std::tan(tx), std::tan(ty), 1.).unit();

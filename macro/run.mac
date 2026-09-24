@@ -19,7 +19,7 @@
 # Note that thetaY already has the 0.0305 rad rotation applied in addition to the value supplied here.
 /gun/particle e-
 /tgt/gun/energy 3.74 GeV
-/tgt/gun/thetaX 0 mrad
+/tgt/gun/thetaX 30.5 mrad
 /tgt/gun/thetaY 0 mrad
 /tgt/gun/sigmaX 0 mm
 /tgt/gun/sigmaY 0 mm
