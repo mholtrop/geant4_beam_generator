@@ -30,6 +30,11 @@ DetectorConstruction::~DetectorConstruction()
   delete fMessenger;
 }
 
+G4double DetectorConstruction::GetZCenter() const
+{
+  return fTargetPV != nullptr ? fTargetPV->GetTranslation().z() : fZCenter;
+}
+
 G4VPhysicalVolume* DetectorConstruction::Construct()
 {
   auto* nist = G4NistManager::Instance();

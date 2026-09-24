@@ -26,8 +26,8 @@ Beam (after /run/initialize; in MT mode these commands only exist after init):
   /tgt/gun/thetaX a             angle in x-z plane (rotation about y), dx/dz = tan(a)
   /tgt/gun/thetaXmin/thetaXmax  uniform range
   /tgt/gun/thetaY, thetaYmin/thetaYmax   same in y-z plane
-  /tgt/gun/x0, y0, sigmaX, sigmaY        Gaussian spot, defined at z = zSpot
-  /tgt/gun/zSpot (default -1.1 mm), /tgt/gun/zStart (default -5 mm)
+  /tgt/gun/x0, y0, sigmaX, sigmaY        Gaussian spot, defined at the target centre z
+  /tgt/gun/zStart (default -5 mm)
   /gun/particle                 particle type (e- by default)
 Units can be given explicitly, e.g. "/tgt/gun/thetaX 1.7 deg".
 

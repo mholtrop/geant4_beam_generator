@@ -1,5 +1,7 @@
 #include "PrimaryGeneratorAction.hh"
 
+#include "DetectorConstruction.hh"
+
 #include "G4Event.hh"
 #include "G4GenericMessenger.hh"
 #include "G4ParticleGun.hh"
@@ -8,7 +10,8 @@
 
 #include <cmath>
 
-PrimaryGeneratorAction::PrimaryGeneratorAction()
+PrimaryGeneratorAction::PrimaryGeneratorAction(const DetectorConstruction* detector)
+  : fDetector(detector)
 {
   fGun = new G4ParticleGun(1);
   fGun->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("e-"));
@@ -28,12 +31,10 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fMessenger->DeclarePropertyWithUnit("thetaYmin", "mrad", fThetaYmin, "");
   fMessenger->DeclarePropertyWithUnit("thetaYmax", "mrad", fThetaYmax, "");
 
-  fMessenger->DeclarePropertyWithUnit("x0", "mm", fX0, "Beam spot centre x at z = zSpot");
-  fMessenger->DeclarePropertyWithUnit("y0", "mm", fY0, "Beam spot centre y at z = zSpot");
+  fMessenger->DeclarePropertyWithUnit("x0", "mm", fX0, "Beam spot centre x at the target centre plane");
+  fMessenger->DeclarePropertyWithUnit("y0", "mm", fY0, "Beam spot centre y at the target centre plane");
   fMessenger->DeclarePropertyWithUnit("sigmaX", "mm", fSigmaX, "Gaussian spot sigma in x");
   fMessenger->DeclarePropertyWithUnit("sigmaY", "mm", fSigmaY, "Gaussian spot sigma in y");
-  fMessenger->DeclarePropertyWithUnit("zSpot", "mm", fZSpot,
-                                      "Plane where the spot is defined (default -1.1 mm)");
   fMessenger->DeclarePropertyWithUnit("zStart", "mm", fZStart,
                                       "z where primaries start (must be upstream of target)");
 }
@@ -57,8 +58,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
   const G4double xs = fX0 + (fSigmaX > 0. ? G4RandGauss::shoot(0., fSigmaX) : 0.);
   const G4double ys = fY0 + (fSigmaY > 0. ? G4RandGauss::shoot(0., fSigmaY) : 0.);
 
-  // Move from (xs, ys, zSpot) back to the plane z = zStart along dir
-  const G4double dz = fZStart - fZSpot;
+  // Move from (xs, ys, zCenter of target) back to the plane z = zStart along dir
+  const G4double dz = fZStart - fDetector->GetZCenter();
   const G4ThreeVector pos(xs + dz * dir.x() / dir.z(), ys + dz * dir.y() / dir.z(), fZStart);
 
   fGun->SetParticleEnergy(ekin);

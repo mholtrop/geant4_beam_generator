@@ -5,6 +5,7 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
 
+class DetectorConstruction;
 class G4ParticleGun;
 class G4GenericMessenger;
 class G4Event;
@@ -13,13 +14,14 @@ class G4Event;
 //  - kinetic energy uniform in [Emin, Emax] (Emin == Emax -> monochromatic)
 //  - thetaX = rotation about y (slope dx/dz = tan thetaX), uniform in [min, max]
 //  - thetaY = rotation about x (slope dy/dz = tan thetaY), uniform in [min, max]
-//  - beam spot (x0, y0) with Gaussian sigmas, defined in the plane z = zSpot
+//  - beam spot (x0, y0) with Gaussian sigmas, defined in the plane of the
+//    target centre (z = zCenter of the target)
 //  - each primary starts at z = zStart, back-propagated along its direction
 //    from its spot position, so the spot is where you specify it.
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    PrimaryGeneratorAction();
+    explicit PrimaryGeneratorAction(const DetectorConstruction* detector);
     ~PrimaryGeneratorAction() override;
 
     void GeneratePrimaries(G4Event* event) override;
@@ -30,6 +32,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     void SetThetaY(G4double a) { fThetaYmin = a; fThetaYmax = a; }
 
   private:
+    const DetectorConstruction* fDetector = nullptr;
     G4ParticleGun* fGun = nullptr;
     G4GenericMessenger* fMessenger = nullptr;
 
@@ -39,7 +42,6 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4double fThetaYmin = 0., fThetaYmax = 0.;
     G4double fX0 = 0., fY0 = 0.;
     G4double fSigmaX = 0., fSigmaY = 0.;
-    G4double fZSpot = -1.1 * mm;
     G4double fZStart = -5. * mm;
 };
 

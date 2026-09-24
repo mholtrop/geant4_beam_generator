@@ -20,6 +20,10 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
     const G4VPhysicalVolume* GetTargetPV() const { return fTargetPV; }
 
+    // z of the target centre. Once the geometry is built this is taken from the
+    // placed volume, so it always matches the target actually being simulated.
+    G4double GetZCenter() const;
+
   private:
     G4String fMaterial = "G4_W";
     G4double fThickness = 20. * um;
