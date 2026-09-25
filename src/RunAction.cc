@@ -9,7 +9,7 @@ RunAction::RunAction(EventAction* ev)
 {
   auto* am = G4AnalysisManager::Instance();
   am->SetDefaultFileType("root");
-  am->SetFileName("target_out");  // override with /analysis/setFileName
+  am->SetFileName("beam_generator");  // override with /analysis/setFileName
   am->SetNtupleMerging(true);     // one output file in MT mode
   am->SetVerboseLevel(1);
 
