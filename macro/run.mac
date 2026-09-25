@@ -16,7 +16,9 @@
 /run/initialize
 
 # --- beam: AFTER /run/initialize ---
-# Note that thetaY already has the 0.0305 rad rotation applied in addition to the value supplied here.
+# One event = one bunch: current * bunchTime / e electrons (1498 at 120 nA, 2 ns)
+/tgt/gun/current 120 nA
+/tgt/gun/bunchTime 2 ns
 /gun/particle e-
 /tgt/gun/energy 3.74 GeV
 /tgt/gun/thetaX 30.5 mrad
@@ -28,5 +30,5 @@
 /tgt/created/record true
 /analysis/setFileName target_mono
 
-/run/printProgress 10000
+/run/printProgress 1000
 /run/beamOn 100000

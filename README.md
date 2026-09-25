@@ -1,6 +1,7 @@
-# targetSim
+# geant4_beam_generator
 
-Electrons through a thin target (default 20 um W centred at z = -1.1 mm).
+Simulate the interactions of electrons going through a thin target (default 20 um W centred at z = -1.1 mm).
+Default is for 120nA in 2ns bunches (1500 e- per event). Output is a ROOT file with the events.
 Requires Geant4 >= 11.0 with its data sets installed.
 
 ## Build and run
@@ -15,12 +16,18 @@ Requires Geant4 >= 11.0 with its data sets installed.
 
 Options: -t nThreads, -p physicsList (default FTFP_BERT_EMZ), -s seed.
 
-## Commands
+## Commands for the macros
 
 Geometry (before /run/initialize):
   /tgt/det/material, /tgt/det/thickness, /tgt/det/zCenter, /tgt/det/width
 
 Beam (after /run/initialize; in MT mode these commands only exist after init):
+  One event = one beam bunch. Electrons per bunch = current * bunchTime / e,
+  rounded (1498 for 120 nA and 2 ns). /run/beamOn N simulates N bunches.
+  /tgt/gun/current I            beam current (default 120 nA)
+  /tgt/gun/bunchTime t          time per bunch (default 2 ns)
+  /tgt/gun/poisson true|false   Poisson-fluctuate the number (default false)
+  /tgt/gun/electronsPerBunch n  if > 0, use n electrons per event instead
   /tgt/gun/energy E             monochromatic kinetic energy
   /tgt/gun/Emin, /tgt/gun/Emax  uniform kinetic-energy range
   /tgt/gun/thetaX a             angle in x-z plane (rotation about y), dx/dz = tan(a)
@@ -38,27 +45,31 @@ Output:
 
 ## Output (ROOT file, energies/momenta in MeV, lengths in mm, angles in rad)
 
-primary : one row per event
-  event, E, thetaX, thetaY, x, y, z (start point), Edep (in target), nExit, nCreated
+One TTree, "events", with one row per event (bunch). Per-particle quantities
+are vector columns (RVec in RDataFrame), one entry per particle.
 
-exit    : one row per track crossing the target surface outward, at the exit point
-created : one row per secondary, at its creation point
-  both: event, track, parent, pdg, particle, process (creator process, "primary"
-  for the beam particle), E (kinetic), px, py, pz, x, y, z (recorded point),
-  vx, vy, vz (creation vertex)
+Scalars: event, nPrimary, Edep (in target), nExit, nCreated
 
-The scattered beam electron is the row in "exit" with track == 1. Geant4 keeps
-the primary as track 1 through brems and ionisation; for Moller scattering the
-delta ray is at most half the kinetic energy, so the primary keeps the larger
-share. Backscattered particles appear in "exit" with pz < 0.
+Beam electrons (index i corresponds to Geant4 track ID i+1):
+  prim_E, prim_thetaX, prim_thetaY, prim_x, prim_y, prim_z (start point)
 
-Example (Python, uproot):
+Particles leaving the target, at the exit point (prefix exit_), and
+secondaries at their creation point (prefix created_):
+  track, parent, primary (track ID of the beam electron it descends from),
+  pdg, particle, process (creator process, "primary" for beam electrons),
+  E (kinetic), px, py, pz, x, y, z (recorded point), vx, vy, vz (vertex)
 
-    import uproot
-    f  = uproot.open("target_mono.root")
-    ex = f["exit"].arrays(library="np")
-    beam = ex["track"] == 1
-    E_scat = ex["E"][beam]
+Scattered beam electrons are the exit_ entries with exit_parent == 0. Geant4
+keeps a primary's track ID through brems and ionisation; for Moller scattering
+the delta ray is at most half the kinetic energy, so the primary keeps the
+larger share. Backscattered particles have exit_pz < 0.
+
+Example (PyROOT RDataFrame):
+
+    import ROOT as R
+    df = R.RDataFrame("events", "target_mono.root")
+    df = df.Define("scat_E", "exit_E[exit_parent == 0]")
+    h  = df.Histo1D(("h", "scattered e- energy;E [MeV]", 200, 0, 4000), "scat_E")
 
 ## Physics notes
 

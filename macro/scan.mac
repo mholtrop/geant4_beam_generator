@@ -8,6 +8,8 @@
 /run/initialize
 
 /gun/particle e-
+/tgt/gun/current 120 nA
+/tgt/gun/bunchTime 2 ns
 /tgt/gun/Emin 0.2 GeV
 /tgt/gun/Emax 5.0 GeV
 /tgt/gun/thetaXmin -20 mrad
@@ -18,5 +20,5 @@
 /tgt/gun/sigmaY 0.02 mm
 
 /analysis/setFileName target_scan
-/run/printProgress 10000
-/run/beamOn 100000
+/run/printProgress 100
+/run/beamOn 1000

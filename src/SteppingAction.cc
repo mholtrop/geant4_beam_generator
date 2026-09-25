@@ -2,7 +2,6 @@
 
 #include "DetectorConstruction.hh"
 #include "EventAction.hh"
-#include "ParticleRow.hh"
 
 #include "G4GenericMessenger.hh"
 #include "G4Step.hh"
@@ -32,9 +31,9 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   if (post->GetStepStatus() != fGeomBoundary) return;  // still inside the target
 
   G4Track* track = step->GetTrack();
-  FillParticleRow(1, track, post->GetKineticEnergy(), post->GetMomentum(),
-                  post->GetPosition(), track->GetVertexPosition());
-  fEventAction->CountExiting();
+  fEventAction->Exit().Add(track, fEventAction->GetAncestor(track->GetTrackID()),
+                           post->GetKineticEnergy(), post->GetMomentum(),
+                           post->GetPosition(), track->GetVertexPosition());
 
   if (fKillOnExit) track->SetTrackStatus(fStopAndKill);
 }

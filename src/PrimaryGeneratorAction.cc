@@ -3,6 +3,9 @@
 #include "DetectorConstruction.hh"
 
 #include "G4Event.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4Poisson.hh"
+#include "G4ios.hh"
 #include "G4GenericMessenger.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
@@ -17,6 +20,14 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(const DetectorConstruction* detec
   fGun->SetParticleDefinition(G4ParticleTable::GetParticleTable()->FindParticle("e-"));
 
   fMessenger = new G4GenericMessenger(this, "/tgt/gun/", "Beam settings");
+  fMessenger->DeclarePropertyWithUnit("current", "nA", fCurrent,
+                                      "Beam current (default 120 nA)");
+  fMessenger->DeclarePropertyWithUnit("bunchTime", "ns", fBunchTime,
+                                      "Time per bunch = per event (default 2 ns)");
+  fMessenger->DeclareProperty("poisson", fPoisson,
+                              "Poisson-fluctuate the electrons per bunch (default false)");
+  fMessenger->DeclareProperty("electronsPerBunch", fElectronsPerBunch,
+                              "If > 0, fixed electrons per bunch, ignoring current (default 0)");
   fMessenger->DeclareMethodWithUnit("energy", "GeV", &PrimaryGeneratorAction::SetEnergy,
                                     "Monochromatic kinetic energy (sets Emin = Emax)");
   fMessenger->DeclarePropertyWithUnit("Emin", "GeV", fEmin, "Minimum kinetic energy");
@@ -45,10 +56,34 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
   delete fGun;
 }
 
+G4double PrimaryGeneratorAction::MeanElectronsPerBunch() const
+{
+  // Charge in Geant4 internal units is in units of eplus
+  return fCurrent * fBunchTime / eplus;
+}
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
-   // We generate the beam primaries in the z-axis direction, with the 0.0305 beam rotation
-   // already applied.
+  G4int n = fElectronsPerBunch;
+  if (n <= 0) {
+    const G4double mean = MeanElectronsPerBunch();
+    n = fPoisson ? static_cast<G4int>(G4Poisson(mean)) : static_cast<G4int>(std::lround(mean));
+  }
+
+  if (event->GetEventID() == 0) {
+    G4cout << "=== Beam: ";
+    if (fElectronsPerBunch > 0) G4cout << fElectronsPerBunch << " electrons per event (fixed)";
+    else G4cout << fCurrent / nanoampere << " nA x " << fBunchTime / ns << " ns = "
+                << MeanElectronsPerBunch() << " electrons per event"
+                << (fPoisson ? " (Poisson mean)" : " (rounded)");
+    G4cout << " ===" << G4endl;
+  }
+
+  for (G4int i = 0; i < n; ++i) GenerateOneElectron(event);
+}
+
+void PrimaryGeneratorAction::GenerateOneElectron(G4Event* event)
+{
   const G4double ekin = fEmin + (fEmax - fEmin) * G4UniformRand();
   const G4double tx = fThetaXmin + (fThetaXmax - fThetaXmin) * G4UniformRand();
   const G4double ty = fThetaYmin + (fThetaYmax - fThetaYmin) * G4UniformRand();

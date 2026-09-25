@@ -1,11 +1,11 @@
 #include "RunAction.hh"
 
-#include "ParticleRow.hh"
+#include "EventAction.hh"
 
 #include "G4AnalysisManager.hh"
 #include "G4Run.hh"
 
-RunAction::RunAction()
+RunAction::RunAction(EventAction* ev)
 {
   auto* am = G4AnalysisManager::Instance();
   am->SetDefaultFileType("root");
@@ -13,24 +13,26 @@ RunAction::RunAction()
   am->SetNtupleMerging(true);     // one output file in MT mode
   am->SetVerboseLevel(1);
 
-  // ntuple 0: one row per event
-  am->CreateNtuple("primary", "Generated primary and event summary");
+  // One row per event (= one beam bunch). Vector columns hold one entry per
+  // particle.
+  am->CreateNtuple("events", "One row per beam bunch");
   am->CreateNtupleIColumn("event");     // 0
-  am->CreateNtupleDColumn("E");         // 1 kinetic energy [MeV]
-  am->CreateNtupleDColumn("thetaX");    // 2 atan(px/pz) [rad]
-  am->CreateNtupleDColumn("thetaY");    // 3 atan(py/pz) [rad]
-  am->CreateNtupleDColumn("x");         // 4 start position [mm]
-  am->CreateNtupleDColumn("y");         // 5
-  am->CreateNtupleDColumn("z");         // 6
-  am->CreateNtupleDColumn("Edep");      // 7 energy deposited in target [MeV]
-  am->CreateNtupleIColumn("nExit");     // 8 particles leaving the target
-  am->CreateNtupleIColumn("nCreated");  // 9 secondaries created
-  am->FinishNtuple();
+  am->CreateNtupleIColumn("nPrimary");  // 1 beam electrons in this bunch
+  am->CreateNtupleDColumn("Edep");      // 2 energy deposited in target [MeV]
+  am->CreateNtupleIColumn("nExit");     // 3 particles leaving the target
+  am->CreateNtupleIColumn("nCreated");  // 4 secondaries created (counted even if not recorded)
 
-  // ntuple 1: every particle leaving the target, at the exit point
-  BookParticleNtuple(am, "exit", "Particles leaving the target");
-  // ntuple 2: every secondary, at its creation point
-  BookParticleNtuple(am, "created", "Secondaries at creation");
+  // Beam electrons: index i is track ID i+1
+  am->CreateNtupleDColumn("prim_E", ev->PrimE());            // kinetic energy [MeV]
+  am->CreateNtupleDColumn("prim_thetaX", ev->PrimThetaX());  // atan(px/pz) [rad]
+  am->CreateNtupleDColumn("prim_thetaY", ev->PrimThetaY());  // atan(py/pz) [rad]
+  am->CreateNtupleDColumn("prim_x", ev->PrimX());            // start position [mm]
+  am->CreateNtupleDColumn("prim_y", ev->PrimY());
+  am->CreateNtupleDColumn("prim_z", ev->PrimZ());
+
+  ev->Exit().Book(am, "exit_");        // particles leaving the target, at exit
+  ev->Created().Book(am, "created_");  // secondaries, at creation
+  am->FinishNtuple();
 }
 
 void RunAction::BeginOfRunAction(const G4Run*)
