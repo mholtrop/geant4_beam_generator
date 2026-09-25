@@ -41,6 +41,11 @@ Units can be given explicitly, e.g. "/tgt/gun/thetaX 1.7 deg".
 Output:
   /analysis/setFileName name    (use a new name for each /run/beamOn)
   /tgt/created/record true|false
+  Filter on particles leaving the target (exit_* columns only):
+  /tgt/filter/chargedEmin E     charged particles need kinetic energy >= E (default 0)
+  /tgt/filter/thetaYmin a       all particles need thetaYmin <= thetaY <= thetaYmax,
+  /tgt/filter/thetaYmax a       thetaY = atan2(py, pz) (defaults -pi, +pi)
+  /tgt/filter/keepEmptyEvents   write events with no passing particle (default true)
   /tgt/exit/kill true|false     kill tracks after they leave the target
 
 ## Output (ROOT file, energies/momenta in MeV, lengths in mm, angles in rad)
@@ -48,7 +53,8 @@ Output:
 One TTree, "events", with one row per event (bunch). Per-particle quantities
 are vector columns (RVec in RDataFrame), one entry per particle.
 
-Scalars: event, nPrimary, Edep (in target), nExit, nCreated
+Scalars: event, nPrimary, Edep (in target), nExit (passing the filter),
+  nCreated, nExitAll (leaving the target, before the filter)
 
 Beam electrons (index i corresponds to Geant4 track ID i+1):
   prim_E, prim_thetaX, prim_thetaY, prim_x, prim_y, prim_z (start point)

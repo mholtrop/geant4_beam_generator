@@ -31,9 +31,13 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   if (post->GetStepStatus() != fGeomBoundary) return;  // still inside the target
 
   G4Track* track = step->GetTrack();
-  fEventAction->Exit().Add(track, fEventAction->GetAncestor(track->GetTrackID()),
-                           post->GetKineticEnergy(), post->GetMomentum(),
-                           post->GetPosition(), track->GetVertexPosition());
+  fEventAction->CountExitAll();
+  if (fEventAction->Filter().Pass(track->GetParticleDefinition(), post->GetKineticEnergy(),
+                                  post->GetMomentum())) {
+    fEventAction->Exit().Add(track, fEventAction->GetAncestor(track->GetTrackID()),
+                             post->GetKineticEnergy(), post->GetMomentum(),
+                             post->GetPosition(), track->GetVertexPosition());
+  }
 
   if (fKillOnExit) track->SetTrackStatus(fStopAndKill);
 }

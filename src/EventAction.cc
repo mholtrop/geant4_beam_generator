@@ -12,6 +12,7 @@ void EventAction::BeginOfEventAction(const G4Event*)
 {
   fEdep = 0.;
   fNCreated = 0;
+  fNExitAll = 0;
   fAncestor.clear();
   fPrimE.clear();
   fPrimThetaX.clear();
@@ -40,11 +41,14 @@ void EventAction::EndOfEventAction(const G4Event* event)
     }
   }
 
+  if (!fFilter.KeepEmptyEvents() && fExit.Size() == 0) return;
+
   auto* am = G4AnalysisManager::Instance();
   am->FillNtupleIColumn(0, 0, event->GetEventID());
   am->FillNtupleIColumn(0, 1, static_cast<G4int>(fPrimE.size()));
   am->FillNtupleDColumn(0, 2, fEdep / MeV);
   am->FillNtupleIColumn(0, 3, static_cast<G4int>(fExit.Size()));
   am->FillNtupleIColumn(0, 4, fNCreated);
+  am->FillNtupleIColumn(0, 5, fNExitAll);
   am->AddNtupleRow(0);
 }

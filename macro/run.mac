@@ -28,6 +28,11 @@
 
 # --- output ---
 /tgt/created/record true
+# Filter on particles leaving the target (exit_* columns). Defaults pass all.
+#/tgt/filter/chargedEmin 50 MeV
+#/tgt/filter/thetaYmin 15 mrad
+#/tgt/filter/thetaYmax 80 mrad
+#/tgt/filter/keepEmptyEvents false
 /analysis/setFileName target_mono
 
 /run/printProgress 1000

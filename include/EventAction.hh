@@ -1,6 +1,7 @@
 #ifndef EventAction_h
 #define EventAction_h 1
 
+#include "OutputFilter.hh"
 #include "ParticleBlock.hh"
 
 #include "G4UserEventAction.hh"
@@ -22,6 +23,9 @@ class EventAction : public G4UserEventAction
 
     void AddEdep(G4double e) { fEdep += e; }
     void CountCreated() { ++fNCreated; }
+    void CountExitAll() { ++fNExitAll; }
+
+    const OutputFilter& Filter() const { return fFilter; }
 
     // Beam electron (primary track ID) each track descends from
     void SetAncestor(G4int trackID, G4int primaryID) { fAncestor[trackID] = primaryID; }
@@ -45,6 +49,8 @@ class EventAction : public G4UserEventAction
   private:
     G4double fEdep = 0.;
     G4int fNCreated = 0;
+    G4int fNExitAll = 0;
+    OutputFilter fFilter;
     std::unordered_map<G4int, G4int> fAncestor;
 
     // Beam electrons, index i corresponds to track ID i+1

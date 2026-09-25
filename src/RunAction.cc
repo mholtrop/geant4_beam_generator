@@ -19,8 +19,9 @@ RunAction::RunAction(EventAction* ev)
   am->CreateNtupleIColumn("event");     // 0
   am->CreateNtupleIColumn("nPrimary");  // 1 beam electrons in this bunch
   am->CreateNtupleDColumn("Edep");      // 2 energy deposited in target [MeV]
-  am->CreateNtupleIColumn("nExit");     // 3 particles leaving the target
+  am->CreateNtupleIColumn("nExit");     // 3 particles leaving the target and passing the filter
   am->CreateNtupleIColumn("nCreated");  // 4 secondaries created (counted even if not recorded)
+  am->CreateNtupleIColumn("nExitAll");  // 5 particles leaving the target, before the filter
 
   // Beam electrons: index i is track ID i+1
   am->CreateNtupleDColumn("prim_E", ev->PrimE());            // kinetic energy [MeV]
@@ -30,7 +31,7 @@ RunAction::RunAction(EventAction* ev)
   am->CreateNtupleDColumn("prim_y", ev->PrimY());
   am->CreateNtupleDColumn("prim_z", ev->PrimZ());
 
-  ev->Exit().Book(am, "exit_");        // particles leaving the target, at exit
+  ev->Exit().Book(am, "exit_");        // particles leaving the target and passing the filter
   ev->Created().Book(am, "created_");  // secondaries, at creation
   am->FinishNtuple();
 }
