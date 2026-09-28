@@ -1,5 +1,7 @@
 #include "EventAction.hh"
 
+#include "StdHepWriter.hh"
+
 #include "G4AnalysisManager.hh"
 #include "G4Event.hh"
 #include "G4PrimaryParticle.hh"
@@ -51,4 +53,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
   am->FillNtupleIColumn(0, 4, fNCreated);
   am->FillNtupleIColumn(0, 5, fNExitAll);
   am->AddNtupleRow(0);
+
+  StdHepWriter::Instance()->WriteEvent(event->GetEventID(), fExit);
 }

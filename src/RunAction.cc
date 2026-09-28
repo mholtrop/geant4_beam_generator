@@ -1,6 +1,7 @@
 #include "RunAction.hh"
 
 #include "EventAction.hh"
+#include "StdHepWriter.hh"
 
 #include "G4AnalysisManager.hh"
 #include "G4Run.hh"
@@ -36,13 +37,18 @@ RunAction::RunAction(EventAction* ev)
   am->FinishNtuple();
 }
 
-void RunAction::BeginOfRunAction(const G4Run*)
+void RunAction::BeginOfRunAction(const G4Run* run)
 {
   G4AnalysisManager::Instance()->OpenFile();
+  // In MT mode the master runs this before any worker starts its events.
+  if (IsMaster()) StdHepWriter::Instance()->BeginOfRun(run->GetNumberOfEventToBeProcessed());
 }
 
 void RunAction::EndOfRunAction(const G4Run*)
 {
+  // In MT mode the master runs this after all workers have finished.
+  if (IsMaster()) StdHepWriter::Instance()->EndOfRun();
+
   auto* am = G4AnalysisManager::Instance();
   am->Write();
   am->CloseFile();

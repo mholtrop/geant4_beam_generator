@@ -33,6 +33,9 @@
 #/tgt/filter/thetaYmin 15 mrad
 #/tgt/filter/thetaYmax 80 mrad
 #/tgt/filter/keepEmptyEvents false
+# StdHep copy of the exit_* particles (file name defaults to <ROOT name>.stdhep)
+#/tgt/stdhep/write true
+#/tgt/stdhep/fileName beam_generator.stdhep
 /analysis/setFileName target_mono
 
 /run/printProgress 1000

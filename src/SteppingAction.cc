@@ -36,7 +36,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
                                   post->GetMomentum())) {
     fEventAction->Exit().Add(track, fEventAction->GetAncestor(track->GetTrackID()),
                              post->GetKineticEnergy(), post->GetMomentum(),
-                             post->GetPosition(), track->GetVertexPosition());
+                             post->GetPosition(), track->GetVertexPosition(),
+                             post->GetGlobalTime());
   }
 
   if (fKillOnExit) track->SetTrackStatus(fStopAndKill);

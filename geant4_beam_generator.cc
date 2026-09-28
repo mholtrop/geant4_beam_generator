@@ -6,6 +6,7 @@
 
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
+#include "StdHepWriter.hh"
 
 #include "G4EmParameters.hh"
 #include "G4PhysListFactory.hh"
@@ -71,6 +72,9 @@ int main(int argc, char** argv)
   // Use the individual gamma processes (phot, compt, conv, Rayl) instead of the
   // combined "general" gamma process, so creator-process names stay specific.
   G4EmParameters::Instance()->SetGeneralProcessActive(false);
+
+  // Create the StdHep writer (and its /tgt/stdhep/ commands) on the master
+  StdHepWriter::Instance();
 
   auto* detector = new DetectorConstruction;
   runManager->SetUserInitialization(detector);

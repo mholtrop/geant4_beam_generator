@@ -15,6 +15,10 @@
 //   px, py, pz           momentum [MeV]
 //   x, y, z              recorded point [mm]: exit point / creation point
 //   vx, vy, vz           creation vertex of the track [mm]
+//
+// Kept but not written to the ntuple (used for the StdHep output):
+//   mass                 particle mass [MeV]
+//   t                    global time at the recorded point [ns]
 
 #include "G4AnalysisManager.hh"
 #include "G4SystemOfUnits.hh"
@@ -30,6 +34,7 @@ struct ParticleBlock
     std::vector<int> track, parent, primary, pdg;
     std::vector<std::string> particle, process;
     std::vector<double> E, px, py, pz, x, y, z, vx, vy, vz;
+    std::vector<double> mass, t;  // not booked
 
     void Book(G4AnalysisManager* am, const G4String& prefix)
     {
@@ -57,12 +62,13 @@ struct ParticleBlock
       particle.clear(); process.clear();
       E.clear(); px.clear(); py.clear(); pz.clear();
       x.clear(); y.clear(); z.clear(); vx.clear(); vy.clear(); vz.clear();
+      mass.clear(); t.clear();
     }
 
     std::size_t Size() const { return track.size(); }
 
     void Add(const G4Track* trk, G4int primaryID, G4double ekin, const G4ThreeVector& mom,
-             const G4ThreeVector& pos, const G4ThreeVector& vtx)
+             const G4ThreeVector& pos, const G4ThreeVector& vtx, G4double time)
     {
       const auto* def = trk->GetParticleDefinition();
       const auto* creator = trk->GetCreatorProcess();
@@ -83,6 +89,8 @@ struct ParticleBlock
       vx.push_back(vtx.x() / mm);
       vy.push_back(vtx.y() / mm);
       vz.push_back(vtx.z() / mm);
+      mass.push_back(def->GetPDGMass() / MeV);
+      t.push_back(time / ns);
     }
 };
 

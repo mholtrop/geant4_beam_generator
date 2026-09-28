@@ -16,6 +16,10 @@ Requires Geant4 >= 11.0 with its data sets installed.
 
 Options: -t nThreads, -p physicsList (default FTFP_BERT_EMZ), -s seed.
 
+StdHep output is built by default and needs the libtirpc development package
+(libtirpc-dev on Debian/Ubuntu, libtirpc-devel on RHEL/Alma). Configure with
+-DWITH_STDHEP=OFF to build without it.
+
 ## Commands for the macros
 
 Geometry (before /run/initialize):
@@ -76,6 +80,28 @@ Example (PyROOT RDataFrame):
     df = R.RDataFrame("events", "target_mono.root")
     df = df.Define("scat_E", "exit_E[exit_parent == 0]")
     h  = df.Histo1D(("h", "scattered e- energy;E [MeV]", 200, 0, 4000), "scat_E")
+
+## StdHep output
+
+    /tgt/stdhep/write true        (default false)
+    /tgt/stdhep/fileName name     (default: ROOT file name with .stdhep)
+
+Contains the same particles as the exit_* columns (after the filter), one
+StdHep event per written Geant4 event, with NEVHEP = Geant4 event ID. Per
+particle: ISTHEP = 1, IDHEP = PDG code, no mother/daughter links,
+PHEP = (px, py, pz, total E, mass) in GeV, VHEP = exit point in mm and the
+global time at the exit point in mm/c. Momenta and positions are in the
+simulation frame; no beam rotation is applied (if the gun already has the
+30.5 mrad angle, do not rotate again with hps-mc beam_coords).
+
+Not representable in StdHep and therefore only in the ROOT file: track,
+parent, primary, particle name, process and the creation vertex.
+
+Limits of the format/library: an event holds at most 4000 particles (NMXHEP);
+extra particles are dropped from the StdHep file only, with a warning and a
+count at the end of the run. Events with no particles are not written.
+
+The StdHep/mcfio C code is in external/stdhep (copied from hps-mc).
 
 ## Physics notes
 

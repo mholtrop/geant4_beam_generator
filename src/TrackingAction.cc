@@ -31,5 +31,6 @@ void TrackingAction::PreUserTrackingAction(const G4Track* track)
 
   // At the start of tracking the track is at its creation point
   fEventAction->Created().Add(track, ancestor, track->GetKineticEnergy(), track->GetMomentum(),
-                              track->GetPosition(), track->GetPosition());
+                              track->GetPosition(), track->GetPosition(),
+                              track->GetGlobalTime());
 }
