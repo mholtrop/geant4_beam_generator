@@ -45,6 +45,12 @@ if(WITH_STDHEP)
     target_link_libraries(stdhep_mcfio PUBLIC ${TIRPC_LIBRARY})
   endif()
   target_compile_definitions(geant4_beam_generator PRIVATE GBG_WITH_STDHEP)
+  # Reader built from the same library, to check files: stdhep_dump <file> [n]
+  add_executable(stdhep_dump ${PROJECT_SOURCE_DIR}/tools/stdhep_dump.cc)
+  target_link_libraries(stdhep_dump stdhep_mcfio)
+  # Step-by-step check of the first record: stdhep_diag <file>
+  add_executable(stdhep_diag ${PROJECT_SOURCE_DIR}/tools/stdhep_diag.cc)
+  target_link_libraries(stdhep_diag stdhep_mcfio)
   target_link_libraries(geant4_beam_generator stdhep_mcfio)
   message(STATUS "StdHep output enabled (rpc/xdr.h in ${TIRPC_INCLUDE_DIR})")
 endif()
