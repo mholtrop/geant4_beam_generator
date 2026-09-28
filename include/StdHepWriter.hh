@@ -12,6 +12,10 @@
 // Commands (/tgt/stdhep/, executed on the master only):
 //   write true|false   enable StdHep output (default false)
 //   fileName name      output file; default: ROOT file name with .stdhep
+//   fillEmptyEvents true|false
+//                      write events without particles with one ISTHEP = 0
+//                      filler photon (default true); otherwise they are
+//                      skipped, since StdHep cannot store an empty event
 //
 // If the program is built without StdHep support (-DWITH_STDHEP=OFF) the
 // commands exist but enabling the output gives a warning.
@@ -38,11 +42,13 @@ class StdHepWriter
     ~StdHepWriter() = delete;
 
     G4bool fEnabled = false;
+    G4bool fFillEmpty = true;
     G4String fFileName;
     std::atomic<bool> fOpen{false};
     StdHepFile* fFile = nullptr;
     G4int fNTruncated = 0;
     G4int fNEmpty = 0;
+    G4int fNFilled = 0;
     G4GenericMessenger* fMessenger = nullptr;
 };
 

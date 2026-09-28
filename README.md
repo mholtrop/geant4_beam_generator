@@ -99,7 +99,17 @@ parent, primary, particle name, process and the creation vertex.
 
 Limits of the format/library: an event holds at most 4000 particles (NMXHEP);
 extra particles are dropped from the StdHep file only, with a warning and a
-count at the end of the run. Events with no particles are not written.
+count at the end of the run.
+
+Events with no particles: the StdHep library does not write an event with
+nhep = 0. With /tgt/stdhep/fillEmptyEvents true (the default), such an event
+(written to the ROOT file because keepEmptyEvents is true) gets one filler
+particle with ISTHEP = 0, the same as add_filler_particle() in hps-mc: a
+0.1 GeV photon at 30.5 mrad towards +x, vertex (0, 0, 0.1 mm). SLIC makes
+Geant4 primaries only from ISTHEP 1 and 2, so it simulates nothing for such
+an event but still writes an LCIO event; the filler appears there in the
+MCParticle collection with generator status 0. With fillEmptyEvents false,
+empty events are left out of the StdHep file.
 
 The StdHep/mcfio C code is in external/stdhep (copied from hps-mc).
 

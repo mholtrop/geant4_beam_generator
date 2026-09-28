@@ -11,6 +11,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ios.hh"
 
+#include <cmath>
 #include <vector>
 
 namespace
@@ -33,8 +34,12 @@ StdHepWriter::StdHepWriter()
   auto& cmdName = fMessenger->DeclareProperty(
     "fileName", fFileName, "StdHep file name (default: ROOT file name with .stdhep)");
   // The file is handled on the master; do not pass these commands to workers.
+  auto& cmdFill = fMessenger->DeclareProperty(
+    "fillEmptyEvents", fFillEmpty,
+    "Write events without particles with one status-0 filler photon (default true)");
   cmdWrite.command->SetToBeBroadcasted(false);
   cmdName.command->SetToBeBroadcasted(false);
+  cmdFill.command->SetToBeBroadcasted(false);
 }
 
 void StdHepWriter::BeginOfRun(G4int nEventsExpected)
@@ -58,6 +63,7 @@ void StdHepWriter::BeginOfRun(G4int nEventsExpected)
   }
   fNTruncated = 0;
   fNEmpty = 0;
+  fNFilled = 0;
   fOpen = true;
   G4cout << "=== StdHep output: " << name << " ===" << G4endl;
 #else
@@ -93,6 +99,25 @@ void StdHepWriter::WriteEvent(G4int eventID, const ParticleBlock& b)
     p.t = b.t[i] * nsToMmOverC;
   }
 
+  // The StdHep library does not write an event without particles. To keep
+  // the event (e.g. so that SLIC produces one output event per input event),
+  // add one particle with ISTHEP = 0: readers keep it, but SLIC only makes
+  // Geant4 primaries from status 1 and 2, so nothing is simulated. Same
+  // filler as add_filler_particle() in hps-mc stdhep_util.cpp: a 0.1 GeV
+  // photon at 30.5 mrad towards +x, vertex at z = 0.1 mm.
+  const G4bool filled = (n == 0 && fFillEmpty);
+  if (filled) {
+    StdHepParticle f;
+    f.status = 0;
+    f.pdg = 22;
+    f.px = 0.1 * std::sin(0.0305);
+    f.pz = 0.1 * std::cos(0.0305);
+    f.E = 0.1;
+    f.m = 0.;
+    f.z = 0.1;
+    particles.push_back(f);
+  }
+
   G4AutoLock lock(&stdhepMutex);
   if (!fOpen) return;
   const G4int written = fFile->WriteEvent(eventID, particles);
@@ -103,6 +128,9 @@ void StdHepWriter::WriteEvent(G4int eventID, const ParticleBlock& b)
   }
   else if (written == 0) {
     ++fNEmpty;
+  }
+  else if (filled) {
+    ++fNFilled;
   }
   else if (static_cast<std::size_t>(written) < n) {
     if (fNTruncated == 0) {
@@ -128,6 +156,7 @@ void StdHepWriter::EndOfRun()
   fOpen = false;
   G4cout << "=== StdHep output: " << fFile->EventsWritten() << " events written to "
          << fFile->FileName();
+  if (fNFilled > 0) G4cout << ", " << fNFilled << " of them empty (filler particle only)";
   if (fNEmpty > 0) G4cout << ", " << fNEmpty << " empty events not written";
   if (fNTruncated > 0) G4cout << ", " << fNTruncated << " events truncated";
   G4cout << " ===" << G4endl;
