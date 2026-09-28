@@ -27,7 +27,11 @@ if(WITH_STDHEP)
                         "(libtirpc-dev / libtirpc-devel) or configure with -DWITH_STDHEP=OFF.")
   endif()
   file(GLOB stdhep_sources ${PROJECT_SOURCE_DIR}/external/stdhep/src/*.c)
-  add_library(stdhep_mcfio STATIC ${stdhep_sources})
+  # mcf_xdr_array replaces the C library's xdr_array for the StdHep sources
+  # (see external/stdhep/README.md). Also linked into the tools below.
+  option(STDHEP_OWN_XDR_ARRAY "Use the bundled xdr_array in the StdHep code" ON)
+  add_library(stdhep_mcfio STATIC ${stdhep_sources}
+              ${PROJECT_SOURCE_DIR}/external/stdhep/compat/mcf_xdr_array.c)
   target_include_directories(stdhep_mcfio PUBLIC ${PROJECT_SOURCE_DIR}/external/stdhep/include
                                                  ${TIRPC_INCLUDE_DIR})
   # The StdHep/mcfio code predates C99 and is kept unmodified. Compile it as
@@ -41,6 +45,12 @@ if(WITH_STDHEP)
     -Wno-error=int-conversion
     -Wno-error=incompatible-pointer-types
     $<$<C_COMPILER_ID:Clang,AppleClang>:-Wno-error=incompatible-function-pointer-types>)
+  if(STDHEP_OWN_XDR_ARRAY)
+    # Force-include a header that redirects xdr_array to mcf_xdr_array in the
+    # StdHep sources only; the sources themselves stay unmodified.
+    set_source_files_properties(${stdhep_sources} PROPERTIES COMPILE_OPTIONS
+      "-include;${PROJECT_SOURCE_DIR}/external/stdhep/compat/mcf_xdr_compat.h")
+  endif()
   if(TIRPC_LIBRARY)
     target_link_libraries(stdhep_mcfio PUBLIC ${TIRPC_LIBRARY})
   endif()
@@ -51,6 +61,15 @@ if(WITH_STDHEP)
   # Step-by-step check of the first record: stdhep_diag <file>
   add_executable(stdhep_diag ${PROJECT_SOURCE_DIR}/tools/stdhep_diag.cc)
   target_link_libraries(stdhep_diag stdhep_mcfio)
+  # Checks the XDR array routines on this platform: xdr_selftest
+  add_executable(xdr_selftest ${PROJECT_SOURCE_DIR}/tools/xdr_selftest.c)
+  set_target_properties(xdr_selftest PROPERTIES C_STANDARD 90 C_EXTENSIONS ON)
+  target_compile_options(xdr_selftest PRIVATE -w
+    -Wno-error=implicit-function-declaration
+    -Wno-error=int-conversion
+    -Wno-error=incompatible-pointer-types
+    $<$<C_COMPILER_ID:Clang,AppleClang>:-Wno-error=incompatible-function-pointer-types>)
+  target_link_libraries(xdr_selftest stdhep_mcfio)
   target_link_libraries(geant4_beam_generator stdhep_mcfio)
   message(STATUS "StdHep output enabled (rpc/xdr.h in ${TIRPC_INCLUDE_DIR})")
 endif()
